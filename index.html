@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:image" content='https://r.886996007.xyz/images/icon.png'>
+    <meta property="og:title" content='Ralyo'>
+    <meta property="og:audio" content='https://cdn1.suno.ai/ec9a3ace-ce63-47e9-a6c4-3f7d07c72581.mp3'>
+    <title>Ralyo Shared</title>
+    <link rel="shortcut icon" href="#">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+        }
+        #musicTitle {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+        #albumArt {
+            width: 250;
+            height: 250px;
+            border-radius: 50%;
+            animation: rotate 10s linear infinite;
+            animation-play-state: paused;
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        button {
+            cursor: pointer;
+            background: none;
+            border: none;
+            outline: none;
+        }
+        #playPauseBtn {
+            margin: 0px;
+            width: 160;
+            height: 160;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #playPauseBtn svg {
+            fill: white;
+            width: 55%;
+            height: 55%;
+        }
+        #openAppBtn {
+            background-color: black;
+            color: white;
+            border: 2px solid white;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        #loader {
+            width: 25px;
+            height: 25px;
+            border: 5px solid #ffffff;
+            border-top: 5px solid #aa000000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            margin-top: 68px;
+            margin-bottom: 68px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #links {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        #links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="musicTitle"> </h1>
+    <img id="albumArt" alt="Album Art">
+    <audio id="audioPlayer"></audio>
+    <button id="playPauseBtn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 5v14l11-7z"/>
+        </svg>
+    </button>
+    <div id="loader"></div>
+    <button id="openAppBtn">Open in Ralyo</button>
+    <div id="links">
+        <a href="https://r.886996007.xyz/terms" target="_blank" style="text-decoration:underline;padding:0;margin:0;"><font size="1.75">Terms of Service</font></a>
+        <a style="padding:0;margin:0;"><font size="1.75">&</font></a>
+        <a href="https://r.886996007.xyz/policy" target="_blank" style="text-decoration:underline;padding:0;margin:0;"><font size="1.75">Privacy Policy</font></a>
+    </div>
+    <script>
+        const loader = document.getElementById('loader');
+        function showLoader() {
+            playPauseBtn.style.display = 'none';
+            loader.style.display = 'block';
+        }
+        function hideLoader() {
+            setTimeout(() => {
+                loader.style.display = 'none';
+                playPauseBtn.style.display = 'block';
+            }, 250); 
+        }
+
+        const decodedUrl = decodeURIComponent(window.location.search);
+        const urlParams = new URLSearchParams(decodedUrl);
+        const id = urlParams.get('id');
+        const musicTitle = document.getElementById('musicTitle');
+        const albumArt = document.getElementById('albumArt');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const openAppBtn = document.getElementById('openAppBtn');
+        musicTitle.textContent = 'Shared from Ralyo';
+        albumArt.src = document.querySelector('meta[property="og:image"]').content;
+
+        if (null != id) {
+            showLoader();
+            fetch(`https://_songs.886996007.xyz/share/${id}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('response not ok');
+                }
+                return response.text();
+            })
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                const ogParams = {};
+                const ogMetaTags = doc.querySelectorAll('meta[property^="og:"]');
+                
+                ogMetaTags.forEach(tag => {
+                    const property = tag.getAttribute('property');
+                    const content = tag.getAttribute('content');
+                    ogParams[property] = content;
+                });
+
+                albumArt.src = ogParams['og:image'];
+                audioPlayer.src = ogParams['og:audio'];
+                musicTitle.textContent = ogParams['og:title'];
+                hideLoader();
+            })
+            .catch(error => {
+                audioPlayer.src = document.querySelector('meta[property="og:audio"]').content;
+                console.error('Fetch operation error:', error);
+                hideLoader();
+            });
+        } else {
+            audioPlayer.src = document.querySelector('meta[property="og:audio"]').content;
+        }
+        
+        playPauseBtn.addEventListener('click', () => {
+            if (null == audioPlayer.src) {
+                return;
+            }
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                albumArt.style.animationPlayState = 'running';
+                playPauseBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                    </svg>
+                `;
+            } else {
+                audioPlayer.pause();
+                albumArt.style.animationPlayState = 'paused';
+                playPauseBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                `;
+            }
+        });
+
+        openAppBtn.addEventListener('click', () => {
+            const position = audioPlayer.currentTime;
+            const appSchemeUrl = `ralyo://song?id=${id}&pos=${null != position ? position : 0}`;
+            const appStoreUrl = 'https://apps.apple.com/app/id6504747254';
+
+            window.location.href = appSchemeUrl;
+
+            setTimeout(() => {
+                if (window.location.href != appSchemeUrl) {
+                    window.location.href = appStoreUrl;
+                }
+            }, 1000); 
+        });
+    </script>
+</body>
+</html>
