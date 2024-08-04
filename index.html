@@ -124,17 +124,18 @@
         const decodedUrl = decodeURIComponent(window.location.search);
         const urlParams = new URLSearchParams(decodedUrl);
         const id = urlParams.get('id');
+        const debug = urlParams.get('debug');
         const musicTitle = document.getElementById('musicTitle');
         const albumArt = document.getElementById('albumArt');
         const audioPlayer = document.getElementById('audioPlayer');
         const playPauseBtn = document.getElementById('playPauseBtn');
         const openAppBtn = document.getElementById('openAppBtn');
-        musicTitle.textContent = 'Shared from Ralyo';
+        musicTitle.textContent = `Shared from Ralyo${null != debug ? '(debug)' : ''}`;
         albumArt.src = document.querySelector('meta[property="og:image"]').content;
 
         if (null != id) {
             showLoader();
-            fetch(`https://songs.886996007.xyz/share/${id}`)
+            fetch(`https://${null != debug ? '_songs' : 'songs'}.886996007.xyz/share/${id}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('response not ok');
